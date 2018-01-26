@@ -49,15 +49,15 @@ public interface Loggable {
 	}
 
 	public void debug() {
-	    Log._debug(clazz.getSimpleName(), format, args);
+	    Log.get(clazz).debug(format, args);
 	}
 
 	public void info() {
-	    Log._info(clazz.getSimpleName(), format, args);
+	    Log.get(clazz).info(format, args);
 	}
 
   	public void error() {
-	    Log._error(clazz.getSimpleName(), throwable, format, args);
+	    Log.get(clazz).error(throwable, format, args);
 	}
 
     }
