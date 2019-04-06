@@ -20,40 +20,40 @@ import java.util.Iterator;
 
 /**
  * Helper class for iterating through nodes.
- * 
+ *
  * @author John Wilson
  */
 public abstract class NodeIterator implements Iterator {
-    private static final Object DELAYED_INIT = new Object();
-    private final Iterator iter;
-    private Object nextNode;
+  private static final Object DELAYED_INIT = new Object();
+  private final Iterator iter;
+  private Object nextNode;
 
-    public NodeIterator(final Iterator iter) {
-        this.iter = iter;
-        this.nextNode = DELAYED_INIT;
+  public NodeIterator(final Iterator iter) {
+    this.iter = iter;
+    this.nextNode = DELAYED_INIT;
+  }
+
+  private void initNextNode() {
+    if (nextNode == DELAYED_INIT) nextNode = getNextNode(iter);
+  }
+
+  public boolean hasNext() {
+    initNextNode();
+    return this.nextNode != null;
+  }
+
+  public Object next() {
+    initNextNode();
+    try {
+      return this.nextNode;
+    } finally {
+      this.nextNode = getNextNode(this.iter);
     }
+  }
 
-    private void initNextNode(){
-        if (nextNode==DELAYED_INIT) nextNode = getNextNode(iter);
-    }
+  public void remove() {
+    throw new UnsupportedOperationException();
+  }
 
-    public boolean hasNext() {
-        initNextNode();
-        return this.nextNode != null;
-    }
-
-    public Object next() {
-        initNextNode();
-        try {
-            return this.nextNode;
-        } finally {
-            this.nextNode = getNextNode(this.iter);
-        }
-    }
-
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
-
-    protected abstract Object getNextNode(final Iterator iter);
+  protected abstract Object getNextNode(final Iterator iter);
 }

@@ -16,23 +16,19 @@ package com.github.xgp.http.server;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * HTTP Handler that responds with a fixed redirect. The redirect only occurs if
- * this handler's path is identical to the requested path, otherwise the
- * response is 404.
+ * HTTP Handler that responds with a fixed redirect. The redirect only occurs if this handler's path
+ * is identical to the requested path, otherwise the response is 404.
  */
 public class RedirectHandler implements HttpHandler {
   private final String redirectPath;
 
-  /**
-   * @param redirectPath relative or absolute path to redirect clients to
-   */
+  /** @param redirectPath relative or absolute path to redirect clients to */
   public RedirectHandler(String redirectPath) {
     this.redirectPath = redirectPath;
   }
@@ -40,8 +36,7 @@ public class RedirectHandler implements HttpHandler {
   @Override
   public void handle(HttpExchange ex) throws IOException {
     if (!ex.getRequestURI().getPath().equals(ex.getHttpContext().getPath())) {
-      HttpExchanges.cannedRespond(ex, HttpURLConnection.HTTP_NOT_FOUND,
-                    "404: Not Found.");
+      HttpExchanges.cannedRespond(ex, HttpURLConnection.HTTP_NOT_FOUND, "404: Not Found.");
       return;
     }
 

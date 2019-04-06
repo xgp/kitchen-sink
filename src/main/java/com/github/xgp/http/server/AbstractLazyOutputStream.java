@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * OutputStream that passes all calls to the {@code OutputStream} provided by
- * {@link #retrieveOs}, but calls {@code retrieveOs()} only once needed.
+ * OutputStream that passes all calls to the {@code OutputStream} provided by {@link #retrieveOs},
+ * but calls {@code retrieveOs()} only once needed.
  */
 abstract class AbstractLazyOutputStream extends OutputStream {
   private OutputStream os;
@@ -59,8 +59,6 @@ abstract class AbstractLazyOutputStream extends OutputStream {
     }
   }
 
-  /**
-   * Retrieve the real {@code OutputStream}. Will only be called once.
-   */
+  /** Retrieve the real {@code OutputStream}. Will only be called once. */
   protected abstract OutputStream retrieveOs() throws IOException;
 }

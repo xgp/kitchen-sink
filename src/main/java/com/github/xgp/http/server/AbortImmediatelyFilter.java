@@ -16,7 +16,6 @@ package com.github.xgp.http.server;
 
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
-
 import java.io.IOException;
 
 /** Filter that aborts the request when server is under high load. */
@@ -31,8 +30,7 @@ public class AbortImmediatelyFilter extends Filter {
     // Checking abortImmediately is part of a hack to immediately reject clients
     // when the work queue grows too long.
     if (HttpExchanges.abortImmediately.get() != null) {
-      throw new IOException(
-          "Aborting request because server is under high load");
+      throw new IOException("Aborting request because server is under high load");
     }
     chain.doFilter(ex);
   }

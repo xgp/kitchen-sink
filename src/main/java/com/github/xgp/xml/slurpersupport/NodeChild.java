@@ -20,8 +20,6 @@ package com.github.xgp.xml.slurpersupport;
 // import groovy.lang.GroovyObject;
 // import groovy.lang.GroovyRuntimeException;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -33,134 +31,141 @@ import java.util.Map;
  * @author John Wilson
  */
 public class NodeChild extends GPathResult {
-    private final Node node;
+  private final Node node;
 
-    /**
-     * @param node a node
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param namespacePrefix the namespace prefix if any
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
-    public NodeChild(final Node node, final GPathResult parent, final String namespacePrefix, final Map<String, String> namespaceTagHints) {
-        super(parent, node.name(), namespacePrefix, namespaceTagHints);
-        this.node = node;
-    }
+  /**
+   * @param node a node
+   * @param parent the GPathResult prior to the application of the expression creating this
+   *     GPathResult
+   * @param namespacePrefix the namespace prefix if any
+   * @param namespaceTagHints the known tag to namespace mappings
+   */
+  public NodeChild(
+      final Node node,
+      final GPathResult parent,
+      final String namespacePrefix,
+      final Map<String, String> namespaceTagHints) {
+    super(parent, node.name(), namespacePrefix, namespaceTagHints);
+    this.node = node;
+  }
 
-    /**
-     * @param node a node
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
-    public NodeChild(final Node node, final GPathResult parent, final Map<String, String> namespaceTagHints) {
-        this(node, parent, "*", namespaceTagHints);
-    }
+  /**
+   * @param node a node
+   * @param parent the GPathResult prior to the application of the expression creating this
+   *     GPathResult
+   * @param namespaceTagHints the known tag to namespace mappings
+   */
+  public NodeChild(
+      final Node node, final GPathResult parent, final Map<String, String> namespaceTagHints) {
+    this(node, parent, "*", namespaceTagHints);
+  }
 
-    public int size() {
-        return 1;
-    }
+  public int size() {
+    return 1;
+  }
 
-    public String text() {
-        return this.node.text();
-    }
+  public String text() {
+    return this.node.text();
+  }
 
-    public String namespaceURI() {
-        return this.node.namespaceURI();
-    }
+  public String namespaceURI() {
+    return this.node.namespaceURI();
+  }
 
-    public GPathResult parents() {
-        // TODO Auto-generated method stub
-        throw new RuntimeException("parents() not implemented yet");
-    }
+  public GPathResult parents() {
+    // TODO Auto-generated method stub
+    throw new RuntimeException("parents() not implemented yet");
+  }
 
-    public Iterator iterator() {
-        return new Iterator() {
-            private boolean hasNext = true;
+  public Iterator iterator() {
+    return new Iterator() {
+      private boolean hasNext = true;
 
-            public boolean hasNext() {
-                return this.hasNext;
-            }
+      public boolean hasNext() {
+        return this.hasNext;
+      }
 
-            public Object next() {
-                try {
-                    return (this.hasNext) ? NodeChild.this : null;
-                } finally {
-                    this.hasNext = false;
-                }
-            }
-
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    public Iterator nodeIterator() {
-        return new Iterator() {
-            private boolean hasNext = true;
-
-            public boolean hasNext() {
-                return this.hasNext;
-            }
-
-            public Object next() {
-                try {
-                    return (this.hasNext) ? NodeChild.this.node : null;
-                } finally {
-                    this.hasNext = false;
-                }
-            }
-
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    public Object getAt(final int index) {
-        if (index == 0) {
-            return node;
-        } else {
-            throw new ArrayIndexOutOfBoundsException(index);
+      public Object next() {
+        try {
+          return (this.hasNext) ? NodeChild.this : null;
+        } finally {
+          this.hasNext = false;
         }
+      }
+
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+
+  public Iterator nodeIterator() {
+    return new Iterator() {
+      private boolean hasNext = true;
+
+      public boolean hasNext() {
+        return this.hasNext;
+      }
+
+      public Object next() {
+        try {
+          return (this.hasNext) ? NodeChild.this.node : null;
+        } finally {
+          this.hasNext = false;
+        }
+      }
+
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+
+  public Object getAt(final int index) {
+    if (index == 0) {
+      return node;
+    } else {
+      throw new ArrayIndexOutOfBoundsException(index);
     }
+  }
 
-    public Map attributes() {
-        return this.node.attributes();
-    }
+  public Map attributes() {
+    return this.node.attributes();
+  }
 
-    public Iterator childNodes() {
-        return this.node.childNodes();
-    }
+  public Iterator childNodes() {
+    return this.node.childNodes();
+  }
 
-//     public GPathResult find(final Closure closure) {
-//         if (DefaultTypeTransformation.castToBoolean(closure.call(new Object[]{this.node}))) {
-//             return this;
-//         } else {
-//             return new NoChildren(this, "", this.namespaceTagHints);
-//         }
-//     }
+  //     public GPathResult find(final Closure closure) {
+  //         if (DefaultTypeTransformation.castToBoolean(closure.call(new Object[]{this.node}))) {
+  //             return this;
+  //         } else {
+  //             return new NoChildren(this, "", this.namespaceTagHints);
+  //         }
+  //     }
 
-//     public GPathResult findAll(final Closure closure) {
-//         return find(closure);
-//     }
+  //     public GPathResult findAll(final Closure closure) {
+  //         return find(closure);
+  //     }
 
-//     public void build(final GroovyObject builder) {
-//         this.node.build(builder, this.namespaceMap, this.namespaceTagHints);
-//     }
+  //     public void build(final GroovyObject builder) {
+  //         this.node.build(builder, this.namespaceMap, this.namespaceTagHints);
+  //     }
 
-//     public Writer writeTo(final Writer out) throws IOException {
-//         return this.node.writeTo(out);
-//     }
+  //     public Writer writeTo(final Writer out) throws IOException {
+  //         return this.node.writeTo(out);
+  //     }
 
-//     protected void replaceNode(final Closure newValue) {
-//         this.node.replaceNode(newValue, this);
-//     }
+  //     protected void replaceNode(final Closure newValue) {
+  //         this.node.replaceNode(newValue, this);
+  //     }
 
-//     protected void replaceBody(final Object newValue) {
-//         this.node.replaceBody(newValue);
-//     }
+  //     protected void replaceBody(final Object newValue) {
+  //         this.node.replaceBody(newValue);
+  //     }
 
-//     protected void appendNode(final Object newValue) {
-//         this.node.appendNode(newValue, this);
-//     }
+  //     protected void appendNode(final Object newValue) {
+  //         this.node.appendNode(newValue, this);
+  //     }
 }

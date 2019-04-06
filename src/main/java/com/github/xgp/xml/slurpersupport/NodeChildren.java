@@ -20,8 +20,6 @@ package com.github.xgp.xml.slurpersupport;
 // import groovy.lang.GroovyObject;
 // import groovy.lang.GroovyRuntimeException;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -33,219 +31,227 @@ import java.util.Map;
  * @author John Wilson
  */
 class NodeChildren extends GPathResult {
-    private int size = -1;
+  private int size = -1;
 
-    /**
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name if the GPathResult corresponds to something with a name, e.g. a node
-     * @param namespacePrefix the namespace prefix if any
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
-    public NodeChildren(final GPathResult parent, final String name, final String namespacePrefix, final Map<String, String> namespaceTagHints) {
-        super(parent, name, namespacePrefix, namespaceTagHints);
-    }
+  /**
+   * @param parent the GPathResult prior to the application of the expression creating this
+   *     GPathResult
+   * @param name if the GPathResult corresponds to something with a name, e.g. a node
+   * @param namespacePrefix the namespace prefix if any
+   * @param namespaceTagHints the known tag to namespace mappings
+   */
+  public NodeChildren(
+      final GPathResult parent,
+      final String name,
+      final String namespacePrefix,
+      final Map<String, String> namespaceTagHints) {
+    super(parent, name, namespacePrefix, namespaceTagHints);
+  }
 
-    /**
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name if the GPathResult corresponds to something with a name, e.g. a node
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
-    public NodeChildren(final GPathResult parent, final String name, final Map<String, String> namespaceTagHints) {
-        this(parent, name, "*", namespaceTagHints);
-    }
+  /**
+   * @param parent the GPathResult prior to the application of the expression creating this
+   *     GPathResult
+   * @param name if the GPathResult corresponds to something with a name, e.g. a node
+   * @param namespaceTagHints the known tag to namespace mappings
+   */
+  public NodeChildren(
+      final GPathResult parent, final String name, final Map<String, String> namespaceTagHints) {
+    this(parent, name, "*", namespaceTagHints);
+  }
 
-    /**
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
-    public NodeChildren(final GPathResult parent, final Map<String, String> namespaceTagHints) {
-        this(parent, "*", namespaceTagHints);
-    }
+  /**
+   * @param parent the GPathResult prior to the application of the expression creating this
+   *     GPathResult
+   * @param namespaceTagHints the known tag to namespace mappings
+   */
+  public NodeChildren(final GPathResult parent, final Map<String, String> namespaceTagHints) {
+    this(parent, "*", namespaceTagHints);
+  }
 
-    public Iterator childNodes() {
-        return new Iterator() {
-            private final Iterator iter = parent.childNodes();
-            private Iterator childIter = nextChildIter();
+  public Iterator childNodes() {
+    return new Iterator() {
+      private final Iterator iter = parent.childNodes();
+      private Iterator childIter = nextChildIter();
 
-            /* (non-Javadoc)
-            * @see java.util.Iterator#hasNext()
-            */
-            public boolean hasNext() {
-                return childIter != null;
+      /* (non-Javadoc)
+       * @see java.util.Iterator#hasNext()
+       */
+      public boolean hasNext() {
+        return childIter != null;
+      }
+
+      /* (non-Javadoc)
+       * @see java.util.Iterator#next()
+       */
+      public Object next() {
+        while (childIter != null) {
+          try {
+            if (childIter.hasNext()) {
+              return childIter.next();
             }
-
-            /* (non-Javadoc)
-            * @see java.util.Iterator#next()
-            */
-            public Object next() {
-                while (childIter != null) {
-                    try {
-                        if (childIter.hasNext()) {
-                            return childIter.next();
-                        }
-                    } finally {
-                        if (!childIter.hasNext()) {
-                            childIter = nextChildIter();
-                        }
-                    }
-                }
-                return null;
+          } finally {
+            if (!childIter.hasNext()) {
+              childIter = nextChildIter();
             }
-
-            /* (non-Javadoc)
-            * @see java.util.Iterator#remove()
-            */
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
-            private Iterator nextChildIter() {
-                while (iter.hasNext()) {
-                    final Node node = (Node) iter.next();
-                    if (name.equals(node.name()) || name.equals("*")) {
-                        final Iterator result = node.childNodes();
-                        if (result.hasNext()) {
-                            if ("*".equals(namespacePrefix) ||
-                                    ("".equals(namespacePrefix) && "".equals(node.namespaceURI())) ||
-                                    node.namespaceURI().equals(namespaceMap.get(namespacePrefix))) {
-                                return result;
-                            }
-                        }
-                    }
-                }
-                return null;
-            }
-        };
-    }
-
-    public Iterator iterator() {
-        return new Iterator() {
-            final Iterator iter = nodeIterator();
-
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            public Object next() {
-                return new NodeChild((Node) iter.next(), parent, namespaceTagHints);
-            }
-
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
-    public Iterator nodeIterator() {
-        if ("*".equals(name)) {
-            return parent.childNodes();
-        } else {
-            return new NodeIterator(parent.childNodes()) {
-                /* (non-Javadoc)
-                * @see org.codehaus.groovy.sandbox.util.slurpersupport.NodeIterator#getNextNode(java.util.Iterator)
-                */
-                protected Object getNextNode(Iterator iter) {
-                    while (iter.hasNext()) {
-                        final Node node = (Node) iter.next();
-                        if (name.equals(node.name())) {
-                            if ("*".equals(namespacePrefix) ||
-                                    ("".equals(namespacePrefix) && "".equals(node.namespaceURI())) ||
-                                    node.namespaceURI().equals(namespaceMap.get(namespacePrefix))) {
-                                return node;
-                            }
-                        }
-                    }
-                    return null;
-                }
-            };
+          }
         }
-    }
+        return null;
+      }
 
-    public GPathResult parents() {
-        // TODO Auto-generated method stub
-        throw new RuntimeException("parents() not implemented yet");
-    }
+      /* (non-Javadoc)
+       * @see java.util.Iterator#remove()
+       */
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
 
-    public synchronized int size() {
-        if (this.size == -1) {
-            final Iterator iter = iterator();
-            this.size = 0;
-            while (iter.hasNext()) {
-                iter.next();
-                this.size++;
-            }
-        }
-        return this.size;
-    }
-
-    public String text() {
-        final StringBuffer buf = new StringBuffer();
-        final Iterator iter = nodeIterator();
+      private Iterator nextChildIter() {
         while (iter.hasNext()) {
-            buf.append(((Node) iter.next()).text());
+          final Node node = (Node) iter.next();
+          if (name.equals(node.name()) || name.equals("*")) {
+            final Iterator result = node.childNodes();
+            if (result.hasNext()) {
+              if ("*".equals(namespacePrefix)
+                  || ("".equals(namespacePrefix) && "".equals(node.namespaceURI()))
+                  || node.namespaceURI().equals(namespaceMap.get(namespacePrefix))) {
+                return result;
+              }
+            }
+          }
         }
-        return buf.toString();
+        return null;
+      }
+    };
+  }
+
+  public Iterator iterator() {
+    return new Iterator() {
+      final Iterator iter = nodeIterator();
+
+      public boolean hasNext() {
+        return iter.hasNext();
+      }
+
+      public Object next() {
+        return new NodeChild((Node) iter.next(), parent, namespaceTagHints);
+      }
+
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+
+  public Iterator nodeIterator() {
+    if ("*".equals(name)) {
+      return parent.childNodes();
+    } else {
+      return new NodeIterator(parent.childNodes()) {
+        /* (non-Javadoc)
+         * @see org.codehaus.groovy.sandbox.util.slurpersupport.NodeIterator#getNextNode(java.util.Iterator)
+         */
+        protected Object getNextNode(Iterator iter) {
+          while (iter.hasNext()) {
+            final Node node = (Node) iter.next();
+            if (name.equals(node.name())) {
+              if ("*".equals(namespacePrefix)
+                  || ("".equals(namespacePrefix) && "".equals(node.namespaceURI()))
+                  || node.namespaceURI().equals(namespaceMap.get(namespacePrefix))) {
+                return node;
+              }
+            }
+          }
+          return null;
+        }
+      };
     }
+  }
 
-//     public GPathResult find(final Closure closure) {
-//         final Iterator iter = iterator();
-//         while (iter.hasNext()) {
-//             final Object node = iter.next();
-//             if (DefaultTypeTransformation.castToBoolean(closure.call(new Object[]{node}))) {
-//                 return (GPathResult) node;
-//             }
-//         }
-//         return new NoChildren(this, this.name, namespaceTagHints);
-//     }
+  public GPathResult parents() {
+    // TODO Auto-generated method stub
+    throw new RuntimeException("parents() not implemented yet");
+  }
 
-//     public GPathResult findAll(final Closure closure) {
-//         return new FilteredNodeChildren(this, closure, namespaceTagHints);
-//     }
+  public synchronized int size() {
+    if (this.size == -1) {
+      final Iterator iter = iterator();
+      this.size = 0;
+      while (iter.hasNext()) {
+        iter.next();
+        this.size++;
+      }
+    }
+    return this.size;
+  }
 
-//     public void build(final GroovyObject builder) {
-//         final Iterator iter = nodeIterator();
-//         while (iter.hasNext()) {
-//             final Object next = iter.next();
-//             if (next instanceof Buildable) {
-//                 ((Buildable) next).build(builder);
-//             } else {
-//                 ((Node) next).build(builder, namespaceMap, namespaceTagHints);
-//             }
-//         }
-//     }
+  public String text() {
+    final StringBuffer buf = new StringBuffer();
+    final Iterator iter = nodeIterator();
+    while (iter.hasNext()) {
+      buf.append(((Node) iter.next()).text());
+    }
+    return buf.toString();
+  }
 
-//     /* (non-Javadoc)
-//     * @see groovy.lang.Writable#writeTo(java.io.Writer)
-//     */
-//     public Writer writeTo(final Writer out) throws IOException {
-//         final Iterator iter = nodeIterator();
-//         while (iter.hasNext()) {
-//             ((Node) iter.next()).writeTo(out);
-//         }
-//         return out;
-//     }
+  //     public GPathResult find(final Closure closure) {
+  //         final Iterator iter = iterator();
+  //         while (iter.hasNext()) {
+  //             final Object node = iter.next();
+  //             if (DefaultTypeTransformation.castToBoolean(closure.call(new Object[]{node}))) {
+  //                 return (GPathResult) node;
+  //             }
+  //         }
+  //         return new NoChildren(this, this.name, namespaceTagHints);
+  //     }
 
-//     protected void replaceNode(final Closure newValue) {
-//         final Iterator iter = iterator();
-//         while (iter.hasNext()) {
-//             final NodeChild result = (NodeChild) iter.next();
-//             result.replaceNode(newValue);
-//         }
-//     }
+  //     public GPathResult findAll(final Closure closure) {
+  //         return new FilteredNodeChildren(this, closure, namespaceTagHints);
+  //     }
 
-//     protected void replaceBody(final Object newValue) {
-//         final Iterator iter = iterator();
-//         while (iter.hasNext()) {
-//             final NodeChild result = (NodeChild) iter.next();
-//             result.replaceBody(newValue);
-//         }
-//     }
+  //     public void build(final GroovyObject builder) {
+  //         final Iterator iter = nodeIterator();
+  //         while (iter.hasNext()) {
+  //             final Object next = iter.next();
+  //             if (next instanceof Buildable) {
+  //                 ((Buildable) next).build(builder);
+  //             } else {
+  //                 ((Node) next).build(builder, namespaceMap, namespaceTagHints);
+  //             }
+  //         }
+  //     }
 
-//     protected void appendNode(final Object newValue) {
-//         final Iterator iter = iterator();
-//         while (iter.hasNext()) {
-//             final NodeChild result = (NodeChild) iter.next();
-//             result.appendNode(newValue);
-//         }
-//     }
+  //     /* (non-Javadoc)
+  //     * @see groovy.lang.Writable#writeTo(java.io.Writer)
+  //     */
+  //     public Writer writeTo(final Writer out) throws IOException {
+  //         final Iterator iter = nodeIterator();
+  //         while (iter.hasNext()) {
+  //             ((Node) iter.next()).writeTo(out);
+  //         }
+  //         return out;
+  //     }
+
+  //     protected void replaceNode(final Closure newValue) {
+  //         final Iterator iter = iterator();
+  //         while (iter.hasNext()) {
+  //             final NodeChild result = (NodeChild) iter.next();
+  //             result.replaceNode(newValue);
+  //         }
+  //     }
+
+  //     protected void replaceBody(final Object newValue) {
+  //         final Iterator iter = iterator();
+  //         while (iter.hasNext()) {
+  //             final NodeChild result = (NodeChild) iter.next();
+  //             result.replaceBody(newValue);
+  //         }
+  //     }
+
+  //     protected void appendNode(final Object newValue) {
+  //         final Iterator iter = iterator();
+  //         while (iter.hasNext()) {
+  //             final NodeChild result = (NodeChild) iter.next();
+  //             result.appendNode(newValue);
+  //         }
+  //     }
 }
