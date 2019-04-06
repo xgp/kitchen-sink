@@ -2,7 +2,7 @@
  * A simple web framework for the JDK built-in {@link com.sun.net.httpserver.HttpServer}
  * <pre>
  * {@code
- * Server server = new Server(8000)
+ * Server server = new Server(8000).router()
  *   .GET("/test/{id}", (request, response) -> {
  *     response.body("id: "+request.attribute("id"));
  *   })

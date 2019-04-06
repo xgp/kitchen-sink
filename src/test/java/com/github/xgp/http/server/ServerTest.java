@@ -32,7 +32,8 @@ public class ServerTest {
 
     @Test public void simpleTextResponse() throws Exception {
 	int port = getFreePort();
-	Server server = new Server(port)
+	Server server = new Server(port);
+        server.router()
 	    .GET("/test", (request, response) -> {
 		    response.body("test");
 		});
@@ -49,10 +50,11 @@ public class ServerTest {
 
     @Test public void parameterTextResponse() throws Exception {
 	int port = getFreePort();
-	Server server = new Server(port)
-	    .GET("/test/{id}", (request, response) -> {
-		    response.body("id: "+request.attribute("id"));
-		});
+	Server server = new Server(port);
+        server.router()
+            .GET("/test/{id}", (request, response) -> {
+                response.body("id: "+request.attribute("id"));
+              });
 	server.start();
 
 	StringBuffer o = new StringBuffer();
@@ -66,7 +68,8 @@ public class ServerTest {
 
     @Test public void multipleHandlers() throws Exception {
 	int port = getFreePort();
-	Server server = new Server(port)
+	Server server = new Server(port);
+        server.router()
 	    .GET("/test/{id}", (request, response) -> {
 		    response.body("id: "+request.attribute("id"));
 		})
@@ -96,7 +99,8 @@ public class ServerTest {
 
     @Test public void mixedMethods() throws Exception {
 	int port = getFreePort();
-	Server server = new Server(port)
+	Server server = new Server(port);
+        server.router()
 	    .GET("/test", (request, response) -> {
 		    response.body("get");
 		})

@@ -2,7 +2,6 @@ package com.github.xgp.http.server;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -10,13 +9,11 @@ import java.util.List;
 import java.util.Optional;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 
-public class RouterHandler implements HttpHandler {
+public class Router implements HttpHandler {
 
-    private final HttpServer http;
     private final List<Route> routes;
 
-    public RouterHandler(HttpServer http) {
-	this.http = http;
+    public Router() {
 	this.routes = new ArrayList<Route>();
     }
 
@@ -42,6 +39,39 @@ public class RouterHandler implements HttpHandler {
             }
         }
         return Optional.empty();
+    }
+
+    public Router addHandler(String method, String path, HttpHandler handler) {
+	getRoutes().add(new Route(method, path, handler));
+	return this;
+    }
+
+    public Router GET(String path, Handler handler) {
+	return addHandler("GET", path, handler);
+    }
+
+    public Router POST(String path, Handler handler) {
+	return addHandler("POST", path, handler);
+    }
+    
+    public Router HEAD(String path, Handler handler) {
+	return addHandler("HEAD", path, handler);
+    }
+    
+    public Router OPTIONS(String path, Handler handler) {
+	return addHandler("OPTIONS", path, handler);
+    }
+    
+    public Router PUT(String path, Handler handler) {
+	return addHandler("PUT", path, handler);
+    }
+    
+    public Router DELETE(String path, Handler handler) {
+	return addHandler("DELETE", path, handler);
+    }
+    
+    public Router TRACE(String path, Handler handler) {
+	return addHandler("TRACE", path, handler);
     }
 
 }

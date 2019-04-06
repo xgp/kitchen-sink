@@ -15,19 +15,23 @@ public class Server {
     private final int port;
     private final AtomicBoolean started;
     private final HttpServer server;
-    private final RouterHandler router;
+    private final Router router;
 
-    public Server(int port) {
-        this.port = port;
-	this.started = new AtomicBoolean(false);
-	try {
-	    this.server = HttpServer.create(new InetSocketAddress(port), 0);
-	    this.router = new RouterHandler(this.server);
-	    this.server.createContext("/", this.router);
-	} catch (IOException e) {
-	    throw new IllegalStateException("Unable to start HTTP server on port "+port, e);
-	}
+  public Server(int port) {
+    this(new Router(), port);
+  }
+  
+  public Server(Router router, int port) {
+    this.port = port;
+    this.router = router;
+    this.started = new AtomicBoolean(false);
+    try {
+      this.server = HttpServer.create(new InetSocketAddress(port), 0);
+      this.server.createContext("/", this.router);
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to start HTTP server on port "+port, e);
     }
+  }
 
     /**
      * Exposes the underlying HttpServer's createContext method. Using
@@ -45,10 +49,14 @@ public class Server {
     /**
      * Exposes the underlying HttpServer.
      */
-    public HttpServer getHttpServer() {
+    public HttpServer httpServer() {
 	return this.server;
     }
 
+  public Router router() {
+    return this.router;
+  }
+  
     public boolean isStarted() {
 	return started.get();
     }
@@ -67,39 +75,6 @@ public class Server {
 	    server.stop(0);
 	    started.set(false);
 	}
-    }
-
-    public Server addHandler(String method, String path, HttpHandler handler) {
-	router.getRoutes().add(new Route(method, path, handler));
-	return this;
-    }
-
-    public Server GET(String path, Handler handler) {
-	return addHandler("GET", path, handler);
-    }
-
-    public Server POST(String path, Handler handler) {
-	return addHandler("POST", path, handler);
-    }
-    
-    public Server HEAD(String path, Handler handler) {
-	return addHandler("HEAD", path, handler);
-    }
-    
-    public Server OPTIONS(String path, Handler handler) {
-	return addHandler("OPTIONS", path, handler);
-    }
-    
-    public Server PUT(String path, Handler handler) {
-	return addHandler("PUT", path, handler);
-    }
-    
-    public Server DELETE(String path, Handler handler) {
-	return addHandler("DELETE", path, handler);
-    }
-    
-    public Server TRACE(String path, Handler handler) {
-	return addHandler("TRACE", path, handler);
     }
 
 }
