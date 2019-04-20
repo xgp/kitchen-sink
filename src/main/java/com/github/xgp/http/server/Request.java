@@ -17,13 +17,14 @@ import java.util.stream.Collectors;
 public class Request {
 
   private final InternalHttpExchange exchange;
-  private final Map<String,List<String>> queryMap;
-  private final Map<String,String> paramMap;
-  
+  private final Map<String, List<String>> queryMap;
+  private final Map<String, String> paramMap;
+
   public Request(InternalHttpExchange exchange) {
     this.exchange = exchange;
     this.queryMap = HttpExchanges.parseQueryParameters(exchange, StandardCharsets.UTF_8);
-    this.paramMap = exchange.getRoute().getPathParametersEncoded(exchange.getRequestURI().getPath());
+    this.paramMap =
+        exchange.getRoute().getPathParametersEncoded(exchange.getRequestURI().getPath());
   }
 
   public HttpExchange exchange() {
@@ -99,9 +100,8 @@ public class Request {
   public Map<String, String> paramMap() {
     return paramMap;
   }
-  
+
   public String param(String name) {
     return paramMap.get(name);
   }
-
 }

@@ -16,7 +16,6 @@
  */
 package com.github.xgp.http.server;
 
-import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +45,7 @@ public class Route {
   private final List<String> parameters;
   private final Pattern regex;
   private final Optional<Transformer> transformer;
-  
+
   public Route(String method, String uri, HttpHandler handler, Optional<Transformer> transformer) {
     this.method = method;
     this.uri = uri;
@@ -83,7 +82,7 @@ public class Route {
   public Optional<Transformer> getTransformer() {
     return transformer;
   }
-  
+
   /**
    * Matches /index to /index or /me/1 to /{person}/{id}
    *

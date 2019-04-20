@@ -5,14 +5,13 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
-import java.util.Map;
 
 @FunctionalInterface
 public interface Handler extends HttpHandler {
-  
+
   @SuppressWarnings("unchecked")
   default void handle(HttpExchange exchange) throws IOException {
-    InternalHttpExchange ex = (InternalHttpExchange)exchange;
+    InternalHttpExchange ex = (InternalHttpExchange) exchange;
     Request request = new Request(ex);
     Response response = new Response(ex);
     handle(request, response);

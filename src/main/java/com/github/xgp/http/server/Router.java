@@ -1,7 +1,7 @@
 package com.github.xgp.http.server;
 
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -13,20 +13,20 @@ import java.util.Map;
 import java.util.Optional;
 
 public class Router implements HttpHandler {
-  
+
   private final List<Route> routes;
-  private final Map<String,Transformer> transformers;
-  
+  private final Map<String, Transformer> transformers;
+
   public Router() {
     this.routes = new ArrayList<Route>();
-    this.transformers = new HashMap<String,Transformer>();
+    this.transformers = new HashMap<String, Transformer>();
   }
 
   public List<Route> getRoutes() {
     return routes;
   }
 
-  public Map<String,Transformer> getTransformers() {
+  public Map<String, Transformer> getTransformers() {
     return transformers;
   }
 
@@ -41,12 +41,17 @@ public class Router implements HttpHandler {
         getRouteFor(exchange.getRequestMethod(), exchange.getRequestURI().toString());
     if (route.isPresent()) {
       try {
-        route.get().getHandler().handle(new InternalHttpExchange(exchange, route.get(), transformers));
+        route
+            .get()
+            .getHandler()
+            .handle(new InternalHttpExchange(exchange, route.get(), transformers));
       } catch (Exception e) {
-        HttpExchanges.cannedRespond(exchange, HTTP_INTERNAL_ERROR, "500 Internal Server Error: "+e.getMessage());
+        HttpExchanges.cannedRespond(
+            exchange, HTTP_INTERNAL_ERROR, "500 Internal Server Error: " + e.getMessage());
       }
     } else {
-      HttpExchanges.cannedRespond(exchange, HTTP_NOT_FOUND, "404 Not Found: "+exchange.getRequestURI());
+      HttpExchanges.cannedRespond(
+          exchange, HTTP_NOT_FOUND, "404 Not Found: " + exchange.getRequestURI());
     }
   }
 
@@ -63,7 +68,8 @@ public class Router implements HttpHandler {
     return addHandler(method, path, handler, null);
   }
 
-  public Router addHandler(String method, String path, HttpHandler handler, Transformer transformer) {
+  public Router addHandler(
+      String method, String path, HttpHandler handler, Transformer transformer) {
     getRoutes().add(new Route(method, path, handler, Optional.ofNullable(transformer)));
     return this;
   }
@@ -118,5 +124,5 @@ public class Router implements HttpHandler {
 
   public Router PATCH(String path, Handler handler, Transformer transformer) {
     return addHandler("PATCH", path, handler, transformer);
-  }  
+  }
 }

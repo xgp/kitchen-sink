@@ -168,14 +168,15 @@ public class ServerTest {
             "/foo",
             (request, response) -> {
               response.body("test");
-              response.contentType("text/foo");              
+              response.contentType("text/foo");
             })
         .GET(
             "/bar",
             (request, response) -> {
               response.body("test");
               response.contentType("text/bar");
-            }, transformer("bar"))
+            },
+            transformer("bar"))
         .addTransformer(transformer("foo"));
     server.start();
 
@@ -195,12 +196,12 @@ public class ServerTest {
     assertThat(req.contentType(), is("text/plain"));
     assertThat(req.body(), is("test"));
   }
-  
+
   private static Transformer transformer(String s) {
     return new Transformer() {
       @Override
       public String contentType() {
-        return "text/"+s;
+        return "text/" + s;
       }
 
       @Override
@@ -212,6 +213,4 @@ public class ServerTest {
       }
     };
   }
-
-        
 }
