@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,13 +45,23 @@ public class Route {
   private final HttpHandler handler;
   private final List<String> parameters;
   private final Pattern regex;
-
-  public Route(String method, String uri, HttpHandler handler) {
+  private final Optional<Transformer> transformer;
+  
+  public Route(String method, String uri, HttpHandler handler, Optional<Transformer> transformer) {
     this.method = method;
     this.uri = uri;
     this.handler = handler;
     this.parameters = parseNamedParameters(uri);
     this.regex = Pattern.compile(convertRawUriToRegex(uri));
+    this.transformer = transformer;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder o = new StringBuilder(method);
+    o.append(":").append(uri).append(":").append(handler.getClass().getName());
+    transformer.ifPresent(t -> o.append(":").append(t.getClass().getName()));
+    return o.toString();
   }
 
   public String getMethod() {
@@ -69,8 +80,12 @@ public class Route {
     return parameters;
   }
 
+  public Optional<Transformer> getTransformer() {
+    return transformer;
+  }
+  
   /**
-   * Matches /index to /index or /me/1 to /person/{id}
+   * Matches /index to /index or /me/1 to /{person}/{id}
    *
    * @return True if the actual route matches a raw rout. False if not.
    */
@@ -81,16 +96,6 @@ public class Route {
     } else {
       return false;
     }
-  }
-
-  /**
-   * Add the path parameters to HttpExchange attributes.
-   *
-   * @param exchange The exchange
-   */
-  public void addAttributes(HttpExchange exchange) {
-    getPathParametersEncoded(exchange.getRequestURI().getPath())
-        .forEach((k, v) -> exchange.setAttribute(k, v));
   }
 
   /**
