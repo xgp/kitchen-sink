@@ -1,5 +1,7 @@
 package com.github.xgp.http.server;
 
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -8,6 +10,8 @@ import com.github.xgp.http.client.HttpRequest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
+import org.hamcrest.Matcher;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ServerTest {
@@ -19,17 +23,22 @@ public class ServerTest {
     }
   }
 
+  private void checkResponse(HttpRequest req, int status, String contentType, Matcher matcher) {
+    StringBuffer o = new StringBuffer();
+    req = req.receive(o);
+    assertThat(req.code(), is(status));
+    assertThat(req.contentType(), is(contentType));
+    assertThat(o.toString(), matcher);
+  }
+  
   @Test
   public void notFound() throws Exception {
     int port = getFreePort();
     Server server = new Server(port);
     server.start();
-
-    StringBuffer o = new StringBuffer();
-    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/foo").receive(o);
-    assertTrue(req.notFound());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(o.toString(), containsString("404"));
+    
+    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/foo");
+    checkResponse(req, HTTP_NOT_FOUND, "text/plain", containsString("404"));
 
     server.stop();
   }
@@ -47,11 +56,8 @@ public class ServerTest {
             });
     server.start();
 
-    StringBuffer o = new StringBuffer();
-    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/test").receive(o);
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(o.toString(), is("test"));
+    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/test");
+    checkResponse(req, HTTP_OK, "text/plain", is("test"));
 
     server.stop();
   }
@@ -69,11 +75,27 @@ public class ServerTest {
             });
     server.start();
 
-    StringBuffer o = new StringBuffer();
-    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/test/1234").receive(o);
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(o.toString(), is("id: 1234"));
+    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/test/1234");
+    checkResponse(req, HTTP_OK, "text/plain", is("id: 1234"));
+
+    server.stop();
+  }
+
+  @Test
+  public void queryTextResponse() throws Exception {
+    int port = getFreePort();
+    Server server = new Server(port);
+    server
+        .router()
+        .GET(
+            "/test",
+            (request, response) -> {
+              response.body("id: " + request.query("id").get(0));
+            });
+    server.start();
+
+    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/test?id=1234");
+    checkResponse(req, HTTP_OK, "text/plain", is("id: 1234"));
 
     server.stop();
   }
@@ -98,19 +120,13 @@ public class ServerTest {
 
     HttpRequest req = null;
     req = HttpRequest.GET("http://localhost:" + port + "/test/1234");
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(req.body(), is("id: 1234"));
+    checkResponse(req, HTTP_OK, "text/plain", is("id: 1234"));
 
     req = HttpRequest.GET("http://localhost:" + port + "/test");
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(req.body(), is("test"));
+    checkResponse(req, HTTP_OK, "text/plain", is("test"));
 
     req = HttpRequest.GET("http://localhost:" + port + "/test/some/1234");
-    assertTrue(req.notFound());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(req.body(), containsString("404"));
+    checkResponse(req, HTTP_NOT_FOUND, "text/plain", containsString("404"));
 
     server.stop();
   }
@@ -135,19 +151,13 @@ public class ServerTest {
 
     HttpRequest req = null;
     req = HttpRequest.GET("http://localhost:" + port + "/test");
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(req.body(), is("get"));
+    checkResponse(req, HTTP_OK, "text/plain", is("get"));
 
     req = HttpRequest.POST("http://localhost:" + port + "/test");
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(req.body(), is("post"));
+    checkResponse(req, HTTP_OK, "text/plain", is("post"));
 
     req = HttpRequest.DELETE("http://localhost:" + port + "/test");
-    assertTrue(req.notFound());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(req.body(), containsString("404"));
+    checkResponse(req, HTTP_NOT_FOUND, "text/plain", containsString("404"));
 
     server.stop();
   }
@@ -182,19 +192,13 @@ public class ServerTest {
 
     HttpRequest req = null;
     req = HttpRequest.GET("http://localhost:" + port + "/foo");
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/foo"));
-    assertThat(req.body(), is("testfoo"));
+    checkResponse(req, HTTP_OK, "text/foo", is("testfoo"));
 
     req = HttpRequest.GET("http://localhost:" + port + "/bar");
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/bar"));
-    assertThat(req.body(), is("testbar"));
+    checkResponse(req, HTTP_OK, "text/bar", is("testbar"));
 
     req = HttpRequest.GET("http://localhost:" + port + "/test");
-    assertTrue(req.ok());
-    assertThat(req.contentType(), is("text/plain"));
-    assertThat(req.body(), is("test"));
+    checkResponse(req, HTTP_OK, "text/plain", is("test"));
   }
 
   private static Transformer transformer(String s) {

@@ -55,14 +55,6 @@ public class Route {
     this.transformer = transformer;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder o = new StringBuilder(method);
-    o.append(":").append(uri).append(":").append(handler.getClass().getName());
-    transformer.ifPresent(t -> o.append(":").append(t.getClass().getName()));
-    return o.toString();
-  }
-
   public String getMethod() {
     return method;
   }
@@ -86,7 +78,7 @@ public class Route {
   /**
    * Matches /index to /index or /me/1 to /{person}/{id}
    *
-   * @return True if the actual route matches a raw rout. False if not.
+   * @return True if the actual route matches a raw route. False if not.
    */
   public boolean matches(String method, String uri) {
     if (this.method.equalsIgnoreCase(method)) {

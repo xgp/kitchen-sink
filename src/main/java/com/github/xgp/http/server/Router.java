@@ -6,6 +6,7 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +39,7 @@ public class Router implements HttpHandler {
   @Override
   public void handle(HttpExchange exchange) throws IOException {
     Optional<Route> route =
-        getRouteFor(exchange.getRequestMethod(), exchange.getRequestURI().toString());
+        getRouteFor(exchange.getRequestMethod(), exchange.getRequestURI());
     if (route.isPresent()) {
       try {
         route
@@ -46,6 +47,7 @@ public class Router implements HttpHandler {
             .getHandler()
             .handle(new InternalHttpExchange(exchange, route.get(), transformers));
       } catch (Exception e) {
+        e.printStackTrace();
         HttpExchanges.cannedRespond(
             exchange, HTTP_INTERNAL_ERROR, "500 Internal Server Error: " + e.getMessage());
       }
@@ -55,9 +57,9 @@ public class Router implements HttpHandler {
     }
   }
 
-  private Optional<Route> getRouteFor(String method, String uri) {
+  private Optional<Route> getRouteFor(String method, URI uri) {
     for (Route route : routes) {
-      if (route.matches(method, uri)) {
+      if (route.matches(method, uri.getPath())) {
         return Optional.of(route);
       }
     }
