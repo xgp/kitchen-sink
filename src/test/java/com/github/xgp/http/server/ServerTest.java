@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ServerTest {
@@ -30,13 +29,13 @@ public class ServerTest {
     assertThat(req.contentType(), is(contentType));
     assertThat(o.toString(), matcher);
   }
-  
+
   @Test
   public void notFound() throws Exception {
     int port = getFreePort();
     Server server = new Server(port);
     server.start();
-    
+
     HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/foo");
     checkResponse(req, HTTP_NOT_FOUND, "text/plain", containsString("404"));
 
@@ -160,6 +159,26 @@ public class ServerTest {
     checkResponse(req, HTTP_NOT_FOUND, "text/plain", containsString("404"));
 
     server.stop();
+  }
+
+  @Test
+  public void handlerMethodReference() throws Exception {
+    int port = getFreePort();
+    TestHandler handler = new TestHandler();
+    Server server = new Server(port);
+    server.router().GET("/test", handler::test);
+    server.start();
+
+    HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/test");
+    checkResponse(req, HTTP_OK, "text/plain", is("test"));
+
+    server.stop();
+  }
+
+  public class TestHandler {
+    public void test(Request request, Response response) {
+      response.body("test");
+    }
   }
 
   @Test

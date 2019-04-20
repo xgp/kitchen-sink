@@ -38,8 +38,7 @@ public class Router implements HttpHandler {
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
-    Optional<Route> route =
-        getRouteFor(exchange.getRequestMethod(), exchange.getRequestURI());
+    Optional<Route> route = getRouteFor(exchange.getRequestMethod(), exchange.getRequestURI());
     if (route.isPresent()) {
       try {
         route
