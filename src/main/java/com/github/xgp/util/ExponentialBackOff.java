@@ -14,9 +14,6 @@
 
 package com.github.xgp.util;
 
-import java.io.IOException;
-import java.util.Objects;
-
 /**
  * Implementation of {@link BackOff} that increases the back off period for each retry attempt using
  * a randomization function that grows exponentially.
@@ -164,7 +161,7 @@ public class ExponentialBackOff implements BackOff {
    *
    * <p>Subclasses may override if a different algorithm is required.
    */
-  public long nextBackOffMillis() throws IOException {
+  public long nextBackOffMillis() {
     // Make sure we have not gone over the maximum elapsed time.
     if (getElapsedTimeMillis() > maxElapsedTimeMillis) {
       return STOP;
@@ -415,7 +412,6 @@ public class ExponentialBackOff implements BackOff {
       this.maxElapsedTimeMillis = maxElapsedTimeMillis;
       return this;
     }
-
   }
 
   // guava Preconditions.checkArgument(boolean)

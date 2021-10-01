@@ -45,7 +45,7 @@ public interface BackOff {
    * }
    * </pre>
    */
-  long nextBackOffMillis() throws IOException;
+  long nextBackOffMillis();
 
   /**
    * Fixed back-off policy whose back-off time is always zero, meaning that the operation is retried
@@ -56,7 +56,7 @@ public interface BackOff {
 
         public void reset() throws IOException {}
 
-        public long nextBackOffMillis() throws IOException {
+        public long nextBackOffMillis() {
           return 0;
         }
       };
@@ -70,7 +70,7 @@ public interface BackOff {
 
         public void reset() throws IOException {}
 
-        public long nextBackOffMillis() throws IOException {
+        public long nextBackOffMillis() {
           return STOP;
         }
       };
