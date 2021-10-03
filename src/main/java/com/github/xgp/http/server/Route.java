@@ -97,7 +97,7 @@ public class Route {
    * <p>Most likely with: http://docs.oracle.com/javase/6/docs/api/java/net/URI.html
    *
    * @param uri The whole encoded uri.
-   * @return A map with all parameters of that uri. Encoded in => encoded out.
+   * @return A map with all parameters of that uri. Encoded in =&gt; encoded out.
    */
   public Map<String, String> getPathParametersEncoded(String uri) {
     Map<String, String> map = new HashMap<>();

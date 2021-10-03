@@ -22,7 +22,7 @@
     <developerConnection>scm:git:git@github.com:xgp/kitchen-sink.git</developerConnection>
     <tag>master</tag>
   </scm>
-  
+
   <licenses>
     <license>
       <name>Various</name>
