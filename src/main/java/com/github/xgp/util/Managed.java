@@ -34,6 +34,7 @@ public interface Managed {
               @Override
               public void run() {
                 managed.stop();
+                managed.await();
               }
             });
   }

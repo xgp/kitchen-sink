@@ -12,99 +12,106 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
- * Simple reactor that takes items from a queue and hands them off to threads for processing.
+ * Simple task runner that takes items from a queue and hands them off to threads for processing.
  * Restricts concurrency permits with a semaphore.
  */
-public class QueuedReactor<T> implements Reactor<T> {
+public class WorkQueue<T> implements Managed, Runnable {
 
-  protected final BlockingQueue<Task<T>> queue;
+  protected final BlockingQueue<T> queue;
   protected final Function<T, ? extends Object> function;
   protected final Semaphore available;
   protected final ExecutorService executor;
   protected final Set<T> processing;
   protected final long delay;
-  ;
+  protected final int permits;
+  protected final Thread thread;
 
-  public QueuedReactor(
-      Function<T, ? extends Object> function, int permits, int threads, long delay) {
+  public WorkQueue(Function<T, ? extends Object> function) {
+    this(new LinkedBlockingQueue<T>(), function, Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(), 1000l);
+  }
+  
+  public WorkQueue(BlockingQueue<T> queue,
+                   Function<T, ? extends Object> function,
+                   int permits,
+                   int threads,
+                   long delay) {
     if (permits > threads) throw new IllegalStateException("permits must be <= threads");
+    this.permits = permits;
     this.delay = delay;
+    this.queue = queue;
     this.function = function;
     this.available = new Semaphore(permits, true);
-    this.queue = new LinkedBlockingQueue<Task<T>>();
     this.executor = Executors.newFixedThreadPool(threads);
     this.processing = Collections.newSetFromMap(new WeakHashMap<T, Boolean>());
+    this.thread = new Thread(this);
   }
 
-  /** @return the Function handler used by this reactor. */
+  /** @return the Queue. */
+  public BlockingQueue<T> getQueue() {
+    return queue;
+  }
+
+  /** @return the Function handler. */
   public Function<T, ? extends Object> getFunction() {
-    return this.function;
+    return function;
   }
 
-  /** @return the Executor used by this reactor. */
-  public ExecutorService getExecutor() {
-    return this.executor;
-  }
-
-  @Override
   public Set<T> getProcessing() {
-    return this.processing;
+    return processing;
   }
 
   private volatile boolean running = false;
 
   @Override
   public boolean isRunning() {
-    return this.running;
+    return running;
   }
 
   @Override
-  public void stop() {
-    this.running = false;
-  }
-
-  @Override
-  public void schedule(T e) {
-    schedule(e, null);
-  }
-
-  @Override
-  public void schedule(T e, FailureHandler<T> handler) {
+  public void start() throws Exception {
     try {
-      queue.put(new Task<T>(e, handler));
-    } catch (InterruptedException ie) {
-      Thread.currentThread().interrupt();
+      thread.start();
+      Managed.addShutdownHook(this);
+    } catch (IllegalThreadStateException e) {
+      throw new Exception(e);
     }
   }
 
   @Override
+  public void stop() {
+    running = false;
+    executor.shutdown();
+  }
+
+  @Override
+  public void await() {
+    try {
+      executor.awaitTermination(delay*permits, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
+ 
+  @Override
   @SuppressWarnings("SleepWhileInLoop")
   public void run() {
     running = true;
-    final Reactor reactor = this;
     while (isRunning() && !Thread.currentThread().isInterrupted()) {
       try {
         if (available.tryAcquire(delay, TimeUnit.MILLISECONDS)) {
           try {
-            final Task<T> task = queue.poll(delay, TimeUnit.MILLISECONDS);
-            if (task == null) {
+            final T item = queue.poll(delay, TimeUnit.MILLISECONDS);
+            if (item == null) {
               available.release();
             } else {
               executor.submit(
                   new Runnable() {
                     public void run() {
                       try {
-                        processing.add(task.getTask());
-                        function.apply(task.getTask());
-                      } catch (Throwable t) {
-                        if (task.getHandler() != null) {
-                          try {
-                            task.getHandler().onFailure(t, reactor, task.getTask());
-                          } catch (Exception e) {
-                          }
-                        }
+                        processing.add(item);
+                        function.apply(item);
                       } finally {
-                        processing.remove(task.getTask());
+                        processing.remove(item);
                         available.release();
                       }
                     }

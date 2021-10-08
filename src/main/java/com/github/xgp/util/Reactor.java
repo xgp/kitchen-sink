@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** Reactor takes items from a source and hands them off to threads for processing. */
-public interface Reactor<T> extends Runnable {
+public interface Reactor<T> {
   /**
    * Schedule the element for immediate execution.
    *
@@ -42,12 +42,6 @@ public interface Reactor<T> extends Runnable {
   default void schedule(T e, long delay, TimeUnit unit, FailureHandler<T> handler) {
     throw new UnsupportedOperationException("Delayed scheduling is not supported by this Reactor");
   }
-
-  /** (Quaid!) Start the Reactor */
-  default void run() {}
-
-  /** @return true if the reactor is running. */
-  public boolean isRunning();
 
   /** Initiates an orderly shutdown of the reactor. */
   public void stop();

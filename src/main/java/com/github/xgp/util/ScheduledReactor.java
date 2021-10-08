@@ -9,24 +9,28 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /** Reactor that uses a ScheduledExecutorService for delay scheduling and processing. */
-public class ScheduledReactor<T> implements Reactor<T> {
+public class ScheduledReactor<T> implements Reactor<T>, Managed {
 
   protected final ScheduledExecutorService pending;
   protected final Function<T, ? extends Object> function;
   protected final Set<T> processing;
+  protected final int threads;
+
+  public ScheduledReactor(Function<T, ? extends Object> function) {
+    this(function, Runtime.getRuntime().availableProcessors());
+  }
 
   public ScheduledReactor(Function<T, ? extends Object> function, int threads) {
     this.function = function;
+    this.threads = threads;
     this.processing = Collections.newSetFromMap(new WeakHashMap<T, Boolean>());
     this.pending = Executors.newScheduledThreadPool(threads);
   }
 
   @Override
   public Set<T> getProcessing() {
-    return this.processing;
+    return processing;
   }
-
-  private volatile boolean running = false;
 
   @Override
   public boolean isRunning() {
@@ -34,10 +38,24 @@ public class ScheduledReactor<T> implements Reactor<T> {
   }
 
   @Override
+  public void start() throws Exception {
+    Managed.addShutdownHook(this);
+  }
+
+  @Override
   public void stop() {
     pending.shutdown();
   }
 
+  @Override
+  public void await() {
+    try {
+      pending.awaitTermination(threads*1000l, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
+  
   @Override
   public void schedule(T e) {
     schedule(e, 0, TimeUnit.MILLISECONDS);
@@ -81,37 +99,4 @@ public class ScheduledReactor<T> implements Reactor<T> {
         delay,
         unit);
   }
-
-  /*
-  private void schedule(final RetryableEvent event) {
-      if (!enabled) return;
-      if (event.getTries() > MAX_RETRIES) {
-        deadLetter(event);
-        return;
-      }
-      long delay = 0;
-      // TODO this is dumb right now. not detection of "back up" that clears the delay queue.
-      if (event.getTries() > 0) delay = (long) Math.pow(2, event.getTries());
-
-      log.debugf("Schedule event with delay of %ss", delay);
-      pendingEvents.schedule(
-          () -> {
-            try {
-              sendJson(toJson(event.getEvent()));
-            } catch (EventEmitterException | IOException e) {
-              log.debugf("Failed to serialize or send event: %s", e.getMessage());
-              if (e instanceof EventEmitterException) {
-                if (!((EventEmitterException) e).canRetry()) {
-                  deadLetter(event);
-                  return;
-                }
-              }
-              event.incrementTries();
-              schedule(event);
-            }
-          },
-          delay,
-          TimeUnit.SECONDS);
-    }
-          */
 }
