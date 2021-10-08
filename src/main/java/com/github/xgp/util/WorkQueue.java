@@ -27,14 +27,20 @@ public class WorkQueue<T> implements Managed, Runnable {
   protected final Thread thread;
 
   public WorkQueue(Function<T, ? extends Object> function) {
-    this(new LinkedBlockingQueue<T>(), function, Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(), 1000l);
+    this(
+        new LinkedBlockingQueue<T>(),
+        function,
+        Runtime.getRuntime().availableProcessors(),
+        Runtime.getRuntime().availableProcessors(),
+        1000l);
   }
-  
-  public WorkQueue(BlockingQueue<T> queue,
-                   Function<T, ? extends Object> function,
-                   int permits,
-                   int threads,
-                   long delay) {
+
+  public WorkQueue(
+      BlockingQueue<T> queue,
+      Function<T, ? extends Object> function,
+      int permits,
+      int threads,
+      long delay) {
     if (permits > threads) throw new IllegalStateException("permits must be <= threads");
     this.permits = permits;
     this.delay = delay;
@@ -86,12 +92,12 @@ public class WorkQueue<T> implements Managed, Runnable {
   @Override
   public void await() {
     try {
-      executor.awaitTermination(delay*permits, TimeUnit.MILLISECONDS);
+      executor.awaitTermination(delay * permits, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
   }
- 
+
   @Override
   @SuppressWarnings("SleepWhileInLoop")
   public void run() {

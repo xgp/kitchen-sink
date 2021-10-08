@@ -50,12 +50,12 @@ public class ScheduledReactor<T> implements Reactor<T>, Managed {
   @Override
   public void await() {
     try {
-      pending.awaitTermination(threads*1000l, TimeUnit.MILLISECONDS);
+      pending.awaitTermination(threads * 1000l, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
   }
-  
+
   @Override
   public void schedule(T e) {
     schedule(e, 0, TimeUnit.MILLISECONDS);
