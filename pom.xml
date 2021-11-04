@@ -4,7 +4,7 @@
   <groupId>com.github.xgp</groupId>
   <artifactId>kitchen-sink</artifactId>
   <packaging>jar</packaging>
-  <version>0.1</version>
+  <version>0.2-SNAPSHOT</version>
 
   <parent>
     <groupId>com.github.xgp</groupId>
@@ -20,7 +20,7 @@
     <url>https://github.com/xgp/kitchen-sink</url>
     <connection>scm:git:git://github.com/xgp/kitchen-sink.git</connection>
     <developerConnection>scm:git:git@github.com:xgp/kitchen-sink.git</developerConnection>
-    <tag>v0.1</tag>
+    <tag>master</tag>
   </scm>
 
   <licenses>
