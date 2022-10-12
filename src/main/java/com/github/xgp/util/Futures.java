@@ -2,9 +2,7 @@ package com.github.xgp.util;
 
 import java.util.concurrent.Future;
 
-/**
- * Conveniences for working with Java Futures.
- */
+/** Conveniences for working with Java Futures. */
 public class Futures {
 
   /**

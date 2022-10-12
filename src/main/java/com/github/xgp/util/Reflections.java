@@ -1,14 +1,12 @@
 package com.github.xgp.util;
 
-import java.util.concurrent.Future;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Conveniences for working with Java reflection.
- */
+/** Conveniences for working with Java reflection. */
 public class Reflections {
-
 
   /**
    * Get methods of a class that are annontated with the given annotation.
@@ -19,13 +17,12 @@ public class Reflections {
    */
   public static List<Method> annotatedMethods(
       Class<?> clazz, Class<? extends Annotation> annotationClass) {
-    ImmutableList.Builder<Method> annotatedMethods = new ImmutableList.Builder<Method>();
+    List<Method> annotatedMethods = new ArrayList<Method>();
     for (Method method : clazz.getMethods()) {
       if (method.isAnnotationPresent(annotationClass)) {
         annotatedMethods.add(method);
       }
     }
-    return annotatedMethods.build();
+    return annotatedMethods;
   }
-
 }

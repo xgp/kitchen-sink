@@ -1,13 +1,9 @@
 package com.github.xgp.util;
 
-import java.lang.reflect.Method;
 import java.util.Optional;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-/**
- * Conveniences for working with Java optional.
- */
+/** Conveniences for working with Java optional. */
 public class Optionals {
 
   /** Something like the Java 9 Optional.or. Chain it if you need more. */
