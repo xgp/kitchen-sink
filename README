@@ -1,1 +1,5 @@
 Java 8 utility library. No external deps.
+
+Other utility libraries:
+- https://github.com/google/guava
+- https://github.com/javadev/underscore-java

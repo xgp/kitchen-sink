@@ -9,11 +9,12 @@
   <parent>
     <groupId>com.github.xgp</groupId>
     <artifactId>oss-parent</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
   </parent>
   
   <properties>
     <java.version>1.8</java.version>
+    <ossrh.url>https://oss.sonatype.org</ossrh.url>
   </properties>
 
   <scm>

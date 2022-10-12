@@ -7,11 +7,15 @@ import java.util.List;
 public interface Loggable {
 
   default Logger log(String format, Object... args) {
-    return new Logger(this.getClass(), format, args);
+    return new Logger(this.getClass(), format, null, args);
   }
 
   default Logger log(String format) {
-    return new Logger(this.getClass(), format);
+    return new Logger(this.getClass(), format, null);
+  }
+
+  default Logger log(Throwable throwable) {
+    return new Logger(this.getClass(), null, throwable);
   }
 
   /** Fluent logger. */
@@ -23,9 +27,10 @@ public interface Loggable {
 
     private Throwable throwable;
 
-    private Logger(Class clazz, String format, Object... args) {
+    private Logger(Class clazz, String format, Throwable throwable, Object... args) {
       this.clazz = clazz;
       this.format = format;
+      this.throwable = throwable;
       this.args = new ArrayList<>();
       args(args);
     }

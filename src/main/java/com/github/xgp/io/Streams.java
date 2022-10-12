@@ -22,11 +22,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 /** Utility class for providing useful methods when handling streams or other forms of I/O. */
 public class Streams {
   // Prevent construction
   private Streams() {}
+
+  /**
+   * Converts an inputStream to a String and closes the inputStream
+   *
+   * @param stream
+   * @param charset
+   * @return
+   * @throws IOException
+   */
+  public static String streamToString(InputStream stream, Charset charset) throws IOException {
+    try (InputStreamReader is = new InputStreamReader(stream, charset)) {
+      return CharStreams.toString(is);
+    }
+  }
 
   /**
    * Copy contents of {@code in} to {@code out}.
