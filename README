@@ -1,4 +1,6 @@
-Java 8 utility library. No external deps.
+Java 8+ utility library. No external deps.
+
+Javadocs: https://javadoc.io/doc/com.github.xgp/kitchen-sink
 
 Other utility libraries:
 - https://github.com/google/guava
