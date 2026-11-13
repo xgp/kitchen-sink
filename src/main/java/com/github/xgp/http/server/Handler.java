@@ -35,8 +35,13 @@ public interface Handler extends HttpHandler {
       ex.sendResponseHeaders(response.status(), 0);
       // c. send the content
       response.transformer().render(response.body(), response);
+    } else if (ex.getResponseCode() == -1) {
+      // 3. no body, and the handler did not send headers itself: still send the status and
+      // headers, with no content
+      if (response.status() == 0) response.status(HTTP_OK);
+      ex.sendResponseHeaders(response.status(), -1);
     }
-    // 3. close everything
+    // 4. close everything
     response.stream().close();
     ex.close();
   }

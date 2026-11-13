@@ -1,5 +1,7 @@
 package com.github.xgp.http.server;
 
+import static java.net.HttpURLConnection.HTTP_ACCEPTED;
+import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -218,6 +220,66 @@ public class ServerTest {
 
     req = HttpRequest.GET("http://localhost:" + port + "/test");
     checkResponse(req, HTTP_OK, "text/plain", is("test"));
+  }
+
+  @Test
+  public void headersSentWithNullBody() throws Exception {
+    int port = getFreePort();
+    Server server = new Server(port);
+    server
+        .router()
+        .GET(
+            "/created",
+            (request, response) -> {
+              response.status(HTTP_CREATED).header("X-Foo", "bar");
+            })
+        .GET(
+            "/empty",
+            (request, response) -> {
+              response.header("X-Foo", "baz");
+            });
+    server.start();
+
+    try {
+      HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/created");
+      assertThat(req.code(), is(HTTP_CREATED));
+      assertThat(req.header("X-Foo"), is("bar"));
+      assertThat(req.body(), is(""));
+
+      req = HttpRequest.GET("http://localhost:" + port + "/empty");
+      assertThat(req.code(), is(HTTP_OK));
+      assertThat(req.header("X-Foo"), is("baz"));
+      assertThat(req.body(), is(""));
+    } finally {
+      server.stop();
+    }
+  }
+
+  @Test
+  public void handlerSendingOwnHeadersWithNullBody() throws Exception {
+    int port = getFreePort();
+    Server server = new Server(port);
+    server
+        .router()
+        .GET(
+            "/raw",
+            (request, response) -> {
+              response.header("X-Foo", "raw");
+              response.exchange().sendResponseHeaders(HTTP_ACCEPTED, 0);
+              OutputStream output = response.stream();
+              output.write("raw".getBytes());
+              output.flush();
+            });
+    server.start();
+
+    try {
+      HttpRequest req = HttpRequest.GET("http://localhost:" + port + "/raw");
+      assertThat(req.code(), is(HTTP_ACCEPTED));
+      assertThat(req.header("X-Foo"), is("raw"));
+      assertThat(req.body(), is("raw"));
+    } finally {
+      server.stop();
+    }
   }
 
   private static Transformer transformer(String s) {
